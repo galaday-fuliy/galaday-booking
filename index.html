@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GALADAY × FULIY 試穿預約</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { --ocean:#0B2A4A; --gold:#D4A23A; --dawn:#FBF3DC; --paper:#FFFDF8; --ink:#1B2430; --muted:#6B7685; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--paper); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  header { width: 100%; background: var(--ocean); color: #fff; text-align: center; padding: 28px 16px 22px; }
+  .brand { font-size: 22px; font-weight: 700; letter-spacing: .12em; }
+  .brand span { color: var(--gold); margin: 0 .3em; }
+  header p { margin: 6px 0 0; font-size: 14px; opacity: .85; }
+  main { width: 100%; max-width: 420px; padding: 24px 16px 40px; text-align: center; }
+  .box { background: var(--dawn); border-radius: 14px; padding: 20px 16px; line-height: 1.7; font-size: 16px; }
+  .box b { color: var(--ocean); }
+  .btn {
+    display: block; width: 100%; margin-top: 14px; padding: 14px; border: 0; border-radius: 12px;
+    font-size: 16px; font-weight: 700; text-decoration: none; cursor: pointer; font-family: inherit;
+  }
+  .primary { background: var(--ocean); color: #fff; }
+  .ghost { background: transparent; color: var(--muted); font-weight: 500; font-size: 14px; text-decoration: underline; }
+  .note { color: var(--muted); font-size: 14px; margin-top: 18px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand">GALADAY<span>×</span>FULIY</div>
+    <p>新北工作室・泳衣試穿預約</p>
+  </header>
+  <main>
+    <!-- 一般瀏覽器：自動轉過去 -->
+    <div id="go">
+      <p class="note">正在前往預約頁…</p>
+      <a class="btn primary" id="goBtn" href="#">沒有跳轉？點這裡</a>
+    </div>
+
+    <!-- IG / FB 內建瀏覽器 -->
+    <div id="inapp" hidden>
+      <div class="box">
+        在 IG 裡開預約頁會<b>很慢</b> 🐢<br>
+        請點右上角 <b>⋯</b><br>→「<b>在外部瀏覽器開啟</b>」
+      </div>
+      <button class="btn primary" id="copyBtn" type="button">複製預約連結</button>
+      <p class="note" id="copyTip">複製後貼到 Safari 或 Chrome 打開也可以</p>
+      <a class="btn ghost" id="slowBtn" href="#">還是要在這裡開（會比較久）</a>
+    </div>
+  </main>
+
+<script>
+  // ▼ 預約頁網址（Apps Script 部署網址）
+  var TARGET = 'https://script.google.com/macros/s/AKfycbz5ISJzfgahyf5DUH6fUNiO6M8DhJbrtG6eFejeIKEeo-eJHHFg7lPKUsEmwPG6Fy81/exec';
+
+  var ua = navigator.userAgent;
+  var isMeta = /Instagram|FBAN|FBAV/i.test(ua);
+  var isLine = /\bLine\//i.test(ua);
+  var isAndroid = /Android/i.test(ua);
+  var isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+  document.getElementById('goBtn').href = TARGET;
+  document.getElementById('slowBtn').href = TARGET;
+
+  if (isLine) {
+    // LINE 官方參數：直接用外部瀏覽器開
+    location.replace(TARGET + '?openExternalBrowser=1');
+  } else if (isMeta) {
+    document.getElementById('go').hidden = true;
+    document.getElementById('inapp').hidden = false;
+    var noScheme = TARGET.replace(/^https:\/\//, '');
+    if (isAndroid) {
+      // Android：直接叫 Chrome 開
+      location.href = 'intent://' + noScheme + '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(TARGET) + ';end';
+    } else if (isIOS) {
+      // iOS 17 以上：試著叫 Safari 開；不支援就停在這頁看提示
+      location.href = 'x-safari-https://' + noScheme;
+    }
+  } else {
+    location.replace(TARGET);
+  }
+
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var btn = this, tip = document.getElementById('copyTip');
+    function done() { btn.textContent = '已複製 ✓'; tip.textContent = '打開 Safari 或 Chrome，貼到網址列就可以了'; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(TARGET).then(done, fallback);
+    } else { fallback(); }
+    function fallback() {
+      var t = document.createElement('textarea');
+      t.value = TARGET; document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); done(); } catch (e) { tip.textContent = TARGET; }
+      document.body.removeChild(t);
+    }
+  });
+</script>
+<noscript><p style="text-align:center"><a href="https://script.google.com/macros/s/AKfycbz5ISJzfgahyf5DUH6fUNiO6M8DhJbrtG6eFejeIKEeo-eJHHFg7lPKUsEmwPG6Fy81/exec">前往預約頁</a></p></noscript>
+</body>
+</html>
